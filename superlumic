@@ -26,6 +26,10 @@ if [ ! -z "$2" ]; then
     username=$2
 fi
 
+if [[ $repo != *"http"* ]] && [ -d $repo ]; then
+  local_repo=true
+fi
+
 function triggerError {
     printf "${BRed} --> $1 ${Color_Off}\n" 1>&2
     exit 1
@@ -107,8 +111,12 @@ sudo chgrp -R admin /usr/local
 
 if [ -d "/usr/local/superlumic/config" ]; then
     setStatusMessage "Update your config from git"
-    cd /usr/local/superlumic/config
-    git pull -q
+    if $local_repo; then
+      cp -Rf $repo/. /usr/local/superlumic/config/
+    else
+      cd /usr/local/superlumic/config
+      git pull -q
+    fi
 else
     if [ ! -z "$repo" ]; then
         setStatusMessage "Getting your config from your fork"
